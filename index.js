@@ -8,33 +8,29 @@ const app = express();
 
 app.use(express.json()); //deserializa o json recebido e transforma 
 
-app.delete("/clientes/:id", (request, response) => {
-  const id = parseInt(request.params.id); //vem como texto, tem q converter
-  db.deleteCustomer(id);
-  response.sendStatus(204);
+app.delete("/clientes/:id", async (req, res) => {  
+  await db.deleteCustomer(req.params.id);
+  res.sendStatus(204);
 })
 
-app.patch("/clientes/:id", (request, response) =>{
-  const id = parseInt(request.params.id)
-  const customer = request.body; //vem como texto, tem q converter  
-  db.updateCustomer(id, customer);
-  response.sendStatus(200); 
+app.patch("/clientes/:id", async (req, res) =>{
+  await db.updateCustomer(req.params.id, req.body);  
+  res.sendStatus(200); 
 })
 
-app.post("/clientes", (request, response) => {
-  const customer = request.body; //vem como texto, tem q converter  
-  db.insertCustomer(customer);
-  response.sendStatus(201);  
+app.post("/clientes", async (req, res) => {  
+  await db.insertCustomer(req.body);
+  res.sendStatus(201);
 })
 
-
-app.get("/clientes/:id", (request, response) => {
-  const id = parseInt(request.params.id); //vem como texto, tem q converter
-  response.json(db.selectCustomer(id));
+app.get("/clientes/:id", async (req, res) => {
+  const cliente = await db.selectCustomer(req.params.id)
+  res.json(cliente);
 })
 
-app.get("/clientes", (request, response) => {
-  response.json(db.selectCustomers());
+app.get("/clientes", async (request, response) => {
+  const clientes = await db.selectCustomers();
+  response.json(clientes);
 })
 
 app.get("/", (request, response, next) => {

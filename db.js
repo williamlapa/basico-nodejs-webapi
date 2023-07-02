@@ -1,33 +1,63 @@
-const customers = [{
-  id: 1,
-  nome: "William",
-  idade: 46,
-  uf: 'PE'
-}];
+//const mysql = require("mysql2/promise");
 
-function selectCustomers(){
-  return customers;
+//const client = mysql.createPool(process.env.CONNECTION_STRING);
+
+async function connect(){
+  if(global.connection)
+    return global.connection.connect();
+
+  const { Pool } = require("pg");
+
+  const pool = new Pool({
+    connectionString: process.env.CONNECTION_STRING
+  });
+
+  const client = await pool.connect();
+  console.log("Criou um pool de conexão");
+
+  const res = await client.query("select now()");
+  console.log(res.rows[0]);
+
+  client.release();
+
+  global.connection = pool;
+
+  return pool.connect();
 }
 
-function selectCustomer(id){
-  return customers.find(c => c.id === id);
+connect();
+
+async function selectCustomers(){
+  const client = await connect();
+  const res = await client.query("SELECT * FROM clientes");
+  return res.rows; // senão colocar vem várias coisas inclusive metadados
 }
 
-function insertCustomer(customer){
-  customers.push(customer);
+async function selectCustomer(id){
+  const client = await connect();
+  const res = await client.query("SELECT * FROM clientes WHERE id=$1", [id]);
+  return res.rows;
 }
 
-function updateCustomer(id, customerData){
-  const customer = customers.find(c => c.id === id);
-  if(!customer) return;
-  customer.nome = customerData.nome;
-  customer.idade = customerData.idade;
-  customer.uf = customerData.uf;
+async function insertCustomer(customer){
+  const client = await connect()
+  const sql = "INSERT INTO clientes(nome, idade, uf) VALUES ($1, $2, $3)";
+  const values = [customer.nome, customer.idade, customer.uf]
+  await client.query(sql, values);  
 }
 
-function deleteCustomer(id){
-  const index = customers.find(c => c.id === id);
-  customers.splice(index, 1);
+async function updateCustomer(id, customer){
+  const client = await connect();
+  const sql = "UPDATE clientes SET nome=$1, idade=$2, uf=$3 WHERE id=$4";
+  const values = [customer.nome, customer.idade, customer.uf, id];
+  await client.query(sql, values);
+}
+
+async function deleteCustomer(id){
+  const client = await connect();
+  const sql = "DELETE FROM clientes WHERE id=$1";
+  const values = [id];
+  await client.query(sql, values);
 }
 
 module.exports = {
