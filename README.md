@@ -29,4 +29,4 @@ async function insertCustomer(customer){
 
 ## ✒️ Autor
 
-* **William Lapa Santos Filho** - *Trabalho Inicial* - [umdesenvolvedor](https://github.com/linkParaPerfil)
+* **William Lapa Santos Filho** - [William Lapa](https://github.com/williamlapa)
